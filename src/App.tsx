@@ -3,7 +3,6 @@ import {
 	Stack,
 	Spacer,
 	Flex,
-	Wrap,
 	Container,
 	Heading,
 	Text,
@@ -11,22 +10,22 @@ import {
 	Input,
 	Button
 } from '@chakra-ui/react';
-import { createNamedExports } from 'typescript';
+// import { createNamedExports } from 'typescript';
 
-const URL = '70yearsoldwtf.blogspot.com/2021/01/communication-and-ideas.html';
+// const URL = '70yearsoldwtf.blogspot.com/2021/01/communication-and-ideas.html';
 // const revised =
 // 'https://70yearswtf.substack.com/p/communication-and-ideas-21-01-28';
-const textText = `<div class='blog-posts hfeed'>
+// const textText = `<div class='blog-posts hfeed'>
 
-<div class="date-outer">
+// <div class="date-outer">
 
-<h2 class='date-header'><span>Jan 28, 2021</span></h2>
+// <h2 class='date-header'><span>Jan 28, 2021</span></h2>
 
-<div class="date-posts">
-`;
+// <div class="date-posts">
+// `;
 //<h2 class='date-header'><span>Jan 31, 2015</span></h2>
 const parseURL = (url: String) => {
-	const urlParse = URL.match(/com\/(.*?)\/(.*?)\/(.*)\.html/);
+	const urlParse = url.match(/com\/(.*?)\/(.*?)\/(.*)\.html/);
 	if (urlParse) {
 		return {
 			year: urlParse[1].substring(2),
@@ -46,24 +45,26 @@ const parseData = (data: String) => {
 	}
 	return null;
 };
-const makeRevised = (url, data) => {
+const makeRevised = (url: string, data: string) => {
 	const parsedURL = parseURL(url);
 	const parsedDay = parseData(data);
 	if (parsedURL && parsedDay) {
 		const revised = `https://70yearswtf.substack.com/p/${parsedURL.slug}-${parsedURL.year}-${parsedURL.month}-${parsedDay}`;
 		return revised;
 	}
-	return null;
+	return 'error';
 };
 
 function InputURL() {
-	const [value, setValue] = React.useState(URL);
+	const [value, setValue] = React.useState('');
 	const [converted, setConverted] = React.useState('');
 	const { onCopy, hasCopied } = useClipboard(converted);
 	const handleChange = (event: any) => setValue(event.target.value);
-
-	const convertData = (URL: string) => {
-		fetch('https://cors-anywhere.herokuapp.com/' + URL, {
+	React.useEffect(() => {
+		if (converted) onCopy();
+	}, [converted]);
+	const convertData = (url: string) => {
+		fetch('https://cors-anywhere.herokuapp.com/' + url, {
 			// mode: 'no-cors', // 'cors' by default
 			method: 'GET'
 			// 'credentials': 'include',
@@ -78,8 +79,7 @@ function InputURL() {
 			})
 			.then((data) => {
 				// console.log(data);
-				const conv = parseURL(URL);
-				const revised = `https://70yearswtf.substack.com/p/${conv.slug}-21-01-28`;
+				const revised = makeRevised(url, data);
 				setConverted(revised);
 			})
 			.catch((e) => console.log('error', e));
@@ -87,7 +87,6 @@ function InputURL() {
 	const convert = () => {
 		convertData(value);
 		// console.log('value is ', value);
-		onCopy();
 	};
 	return (
 		<Stack>
