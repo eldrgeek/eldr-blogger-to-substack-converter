@@ -61,8 +61,12 @@ function InputURL() {
 	const { onCopy, hasCopied } = useClipboard(converted);
 	const handleChange = (event: any) => setValue(event.target.value);
 	React.useEffect(() => {
-		if (converted) onCopy();
-	}, [converted]);
+		if (converted !== '' && value !== '') {
+			console.log('converted', converted);
+			onCopy();
+			setValue('');
+		}
+	}, [converted, value, onCopy, setValue]); //
 	const convertData = (url: string) => {
 		fetch('https://cors-anywhere.herokuapp.com/' + url, {
 			// mode: 'no-cors', // 'cors' by default
