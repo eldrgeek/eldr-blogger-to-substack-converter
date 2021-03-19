@@ -1,5 +1,17 @@
 import * as React from 'react';
-import { Container } from '@chakra-ui/react';
+import {
+	Stack,
+	Spacer,
+	Flex,
+	Wrap,
+	Container,
+	Heading,
+	Text,
+	useClipboard,
+	Input,
+	Button
+} from '@chakra-ui/react';
+import { createNamedExports } from 'typescript';
 
 const URL = '70yearsoldwtf.blogspot.com/2021/01/communication-and-ideas.html';
 // const revised =
@@ -17,48 +29,92 @@ const parseURL = (url: String) => {
 	const urlParse = URL.match(/com\/(.*?)\/(.*?)\/(.*)\.html/);
 	if (urlParse) {
 		return {
-			year: urlParse[1],
-			mont: urlParse[2],
+			year: urlParse[1].substring(2),
+			month: urlParse[2],
 			slug: urlParse[3]
 		};
 	}
 	return null;
 };
 const parseData = (data: String) => {
-	const match = data.match(/header(.*?)span/);
+	const match = data.match(/header'><span>(.*?)<\/span/);
 
 	if (match) {
-		return match[1];
-	} else {
-		return null;
+		const date = match[1].match(/[\w]*\s(\d*)/);
+		console.log(date);
+		if (date) return date[1];
 	}
+	return null;
+};
+const makeRevised = (url, data) => {
+	const parsedURL = parseURL(url);
+	const parsedDay = parseData(data);
+	if (parsedURL && parsedDay) {
+		const revised = `https://70yearswtf.substack.com/p/${parsedURL.slug}-${parsedURL.year}-${parsedURL.month}-${parsedDay}`;
+		return revised;
+	}
+	return null;
 };
 
-export default function App() {
-	React.useEffect(() => {
-		// fetch('xhttps://cors-anywhere.herokuapp.com/' + URL, {
-		// 	// mode: 'no-cors', // 'cors' by default
-		// 	method: 'GET'
-		// 	// 'credentials': 'include',
-		// 	// headers: {
-		// 	// 	// 'Content-Type': 'text/plain',
-		// 	// 	'Origin': '*',
-		// 	// }
-		// })
-		// 	.then((response) => {
-		// 		console.log(response);
-		// 		return response.text();
-		// 	})
-		// 	.then((data) => {
-		// 		console.log(data)
+function InputURL() {
+	const [value, setValue] = React.useState(URL);
+	const [converted, setConverted] = React.useState('');
+	const { onCopy, hasCopied } = useClipboard(converted);
+	const handleChange = (event: any) => setValue(event.target.value);
 
-		// 	})
-		// .catch((e) => console.log('error', e));
-		console.log('DATA', parseURL(URL), parseData(textText));
-	}, []);
+	const convertData = (URL: string) => {
+		fetch('https://cors-anywhere.herokuapp.com/' + URL, {
+			// mode: 'no-cors', // 'cors' by default
+			method: 'GET'
+			// 'credentials': 'include',
+			// headers: {
+			// 	// 'Content-Type': 'text/plain',
+			// 	'Origin': '*',
+			// }
+		})
+			.then((response) => {
+				// console.log(response);
+				return response.text();
+			})
+			.then((data) => {
+				// console.log(data);
+				const conv = parseURL(URL);
+				const revised = `https://70yearswtf.substack.com/p/${conv.slug}-21-01-28`;
+				setConverted(revised);
+			})
+			.catch((e) => console.log('error', e));
+	};
+	const convert = () => {
+		convertData(value);
+		// console.log('value is ', value);
+		onCopy();
+	};
+	return (
+		<Stack>
+			<Heading align="center">URL converter</Heading>
+			<Flex w="100%" p={5}>
+				<Input
+					mr="5"
+					border="2px"
+					borderColor="gray.400"
+					value={value}
+					onChange={handleChange}
+					placeholder="Enter URL"
+				/>
+				<Spacer />
+				<Button colorScheme="blue" onClick={convert}>
+					{hasCopied ? 'Copied' : 'Copy'}
+				</Button>
+			</Flex>
+			<Text> {converted} </Text>
+		</Stack>
+	);
+}
+
+export default function App() {
 	return (
 		<Container h="100vh" d="flex" alignItems="center" justifyContent="center">
-			stuff
+			<InputURL />
 		</Container>
 	);
 }
